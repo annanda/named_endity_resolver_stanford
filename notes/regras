@@ -1,0 +1,41 @@
+## Abordagem 1:
+
+Pega tudo que é NNP e NNPS
+
+Junta NNP/S seguidos em uma coisa só.
+
+Questões:
+
+- Case não estava batendo:
+Ex: khaleen e Khaleen
+
+Comparar de forma case-insensitive
+
+- Edit aparecendo no final de algumas NEs
+Ex: LetterEdit
+
+Remove "Edit" do final de algumas palavras.
+
+- NEs que são plural uma da outra
+Ex: Throne e Thrones
+
+Elimina duas NEs que são plural uma da outra? Acho melhor não.
+
+- Falta de NNPs em nomes grandes:
+Ex:
+Book/NN, of/IN, the/DT, Stranger/NNP => Stranger
+Great/NNP, Sept/NNP, of/IN, Baelor/NNP => Great Sept
+Red/NNP, Keep/VB => Red
+Small/JJ, Council/NNP => Council
+
+King/NNP, 's/POS, Landing/NNP => King
+Night/NNP, 's/POS, Watch/NNP => Night e depois Watch
+Slaver/NNP, 's/POS, Bay/NNP => Slaver
+
+Prince/NNP, That/WDT, Was/VBD, Promised/NNP => Prince e depois Promised
+
+- Parser estar juntando frases em linhas diferentes como se fosse uma linha
+Ex: Air ([Book/NN, of/IN, the/DT, Stranger/NNP, Season/NN, 6/CD, Episode/NN, 4/CD, Air/NNP, date/NN, May/NNP, 15/CD, ,/,, 2016/CD, Written/VBN, by/IN, David/NNP, BenioffD.B/NNP, ./.])
+
+
+
