@@ -1,41 +1,117 @@
 ## Abordagem 1:
 
 Pega tudo que é NNP e NNPS
-
 Junta NNP/S seguidos em uma coisa só.
 
 Questões:
 
-- Case não estava batendo:
-Ex: khaleen e Khaleen
+Resolvidas {
+    - Case não estava batendo:
+    Ex: khaleen e Khaleen
 
-Comparar de forma case-insensitive
+    Comparar de forma case-insensitive
 
-- Edit aparecendo no final de algumas NEs
-Ex: LetterEdit
+    - Edit aparecendo no final de algumas NEs
+    Ex: LetterEdit
 
-Remove "Edit" do final de algumas palavras.
+    Remove "Edit" do final de algumas palavras.
 
-- NEs que são plural uma da outra
-Ex: Throne e Thrones
+    - NEs que são plural uma da outra
+    Ex: Throne e Thrones
 
-Elimina duas NEs que são plural uma da outra? Acho melhor não.
+    Elimina duas NEs que são plural uma da outra? Acho melhor não.
 
-- Falta de NNPs em nomes grandes:
-Ex:
-Book/NN, of/IN, the/DT, Stranger/NNP => Stranger
-Great/NNP, Sept/NNP, of/IN, Baelor/NNP => Great Sept
-Red/NNP, Keep/VB => Red
-Small/JJ, Council/NNP => Council
+    - Parser estar juntando frases em linhas diferentes como se fosse uma linha
+    Ex: Air ([Book/NN, of/IN, the/DT, Stranger/NNP, Season/NN, 6/CD, Episode/NN, 4/CD, Air/NNP, date/NN, May/NNP, 15/CD, ,/,, 2016/CD, Written/VBN, by/IN, David/NNP, BenioffD.B/NNP, ./.])
 
-King/NNP, 's/POS, Landing/NNP => King
-Night/NNP, 's/POS, Watch/NNP => Night e depois Watch
-Slaver/NNP, 's/POS, Bay/NNP => Slaver
+    - Falta de NNPs em nomes grandes:
+    Ex:
+    Book/NN, of/IN, the/DT, Stranger/NNP => Stranger
+    Great/NNP, Sept/NNP, of/IN, Baelor/NNP => Great Sept
 
-Prince/NNP, That/WDT, Was/VBD, Promised/NNP => Prince e depois Promised
+    King/NNP, 's/POS, Landing/NNP => King
+    Night/NNP, 's/POS, Watch/NNP => Night e depois Watch
+    Slaver/NNP, 's/POS, Bay/NNP => Slaver
+}
 
-- Parser estar juntando frases em linhas diferentes como se fosse uma linha
-Ex: Air ([Book/NN, of/IN, the/DT, Stranger/NNP, Season/NN, 6/CD, Episode/NN, 4/CD, Air/NNP, date/NN, May/NNP, 15/CD, ,/,, 2016/CD, Written/VBN, by/IN, David/NNP, BenioffD.B/NNP, ./.])
+Problemas {
+    - Falta de NNPs em nomes grandes:
+    Ex:
+    Red/NNP, Keep/VB => Red
+    Small/JJ, Council/NNP => Council
+    High/JJ Sparrow/NNP => Sparrow
 
+    Prince/NNP, That/WDT, Was/VBD, Promised/NNP => Prince e depois Promised
 
+    - Digitação errada
+    Ex:
+    Vaes Dothrak
+    Vaes Dothraki
+}
 
+## Abordagem 2:
+
+Pega tudo que começa com letra maiuscula
+Junta os seguidos em uma coisa só.
+Só fica com aqueles que tem um NNP/S dentro.
+
+Questões:
+
+Resolvidas {
+    - Case não estava batendo:
+    Ex: khaleen e Khaleen
+
+    Comparar de forma case-insensitive
+
+    - Edit aparecendo no final de algumas NEs
+    Ex: LetterEdit
+
+    Remove "Edit" do final de algumas palavras.
+
+    - NEs que são plural uma da outra
+    Ex: Throne e Thrones
+
+    Elimina duas NEs que são plural uma da outra? Acho melhor não.
+
+    - Falta de NNPs em nomes grandes:
+    Ex:
+    Red/NNP, Keep/VB => Red
+    Small/JJ, Council/NNP => Council
+    High/JJ Sparrow/NNP => Sparrow
+    Prince/NNP, That/WDT, Was/VBD, Promised/NNP => Prince e depois Promised
+
+    - Vários começando com "The", "In", "For" porque a frase começa com essas palavras
+    Ignora palavras que começam maísculas, estão no começo da frase mas não são NNP/S
+
+    - Parser estar juntando frases em linhas diferentes como se fosse uma linha
+    Ex: Air ([Book/NN, of/IN, the/DT, Stranger/NNP, Season/NN, 6/CD, Episode/NN, 4/CD, Air/NNP, date/NN, May/NNP, 15/CD, ,/,, 2016/CD, Written/VBN, by/IN, David/NNP, BenioffD.B/NNP, ./.])
+
+    Refiz a leitura para tokenizar uma linha por vez e ignorar linhas vazias
+
+    - Falta de NNPs em nomes grandes:
+
+    Ex:
+    Great/NNP, Sept/NNP, of/IN, Baelor/NNP => Great Sept
+    Warden/NNP, of/IN, the/DT, North/NNP => Warden, North
+    Lord/NNP, of/IN, Winterfell/NNP => Lord, Winterfell
+    A/DT, Dance/NNP, with/IN, Dragons/NNPS => A Dance e Dragons
+
+    King/NNP, 's/POS, Landing/NNP => King
+    Night/NNP, 's/POS, Watch/NNP => Night e depois Watch
+    Slaver/NNP, 's/POS, Bay/NNP => Slaver
+
+    Considerar 's, with, of e the palavras que são permitidas no meio de entidades nomeadas
+}
+
+Problemas {
+    - Arya e Arya Stark como sendo diferentes
+
+    - Nomes da Wikipedia
+    Ex: Summary, Episode Guide
+
+    - Digitação errada
+    Ex:
+    Vaes Dothrak
+    Vaes Dothraki
+    High/JJ, Priestess/NN, of/IN, the/DT, Dosh/NNP, >>>k<<<haleen/NN // Deveria ser maíscula
+}
