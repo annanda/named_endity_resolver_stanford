@@ -1,5 +1,4 @@
 import edu.stanford.nlp.ling.HasWord;
-import edu.stanford.nlp.ling.Sentence;
 import edu.stanford.nlp.ling.TaggedWord;
 import edu.stanford.nlp.tagger.maxent.MaxentTagger;
 
@@ -15,8 +14,8 @@ public class Main {
     public static void main(String[] args) throws FileNotFoundException {
         System.out.println("Hello World!");
 
-        String modelFile = "resources/models/wsj-0-18-bidirectional-distsim.tagger";
-        String fileToTag = "resources/files/book_of_the_stranger.txt";
+        String modelFile = "../resources/models/english-left3words-distsim.tagger";
+        String fileToTag = "../resources/samples_for_tests/book_of_the_stranger_full.txt";
         MaxentTagger tagger = new MaxentTagger(modelFile);
 
         List<List<HasWord>> sentences = MaxentTagger.tokenizeText(new BufferedReader(new FileReader(fileToTag)));
