@@ -5,10 +5,10 @@ import edu.stanford.nlp.tagger.maxent.MaxentTagger;
 import edu.stanford.nlp.trees.international.arabic.ArabicHeadFinder;
 import sun.misc.ASCIICaseInsensitiveComparator;
 
-import java.io.BufferedReader;
-import java.io.FileNotFoundException;
-import java.io.FileReader;
-import java.io.StringReader;
+import java.io.*;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.*;
 import java.util.stream.Collector;
 import java.util.stream.Collectors;
@@ -17,26 +17,36 @@ import static java.lang.System.out;
 
 public class Main {
 
-    public static void main(String[] args) throws FileNotFoundException {
+    public static void main(String[] args) throws IOException {
 
         String modelFile = "../resources/models/english-left3words-distsim.tagger";
         String fileToTag = "../resources/samples_for_tests/book_of_the_stranger_full.txt";
         MaxentTagger tagger = new MaxentTagger(modelFile);
 
-//        List<List<HasWord>> sentences = MaxentTagger.tokenizeText(new BufferedReader(new FileReader(fileToTag)));
-//        List<List<TaggedWord>> taggedSentences = tagger.process(sentences);
-
-        //ArrayList<String> lines = new ArrayList<>();
-        FileReader reader = new FileReader(fileToTag);
-        BufferedReader bufReader = new BufferedReader(reader);
-        List<String> lines = bufReader.lines().filter(line -> !line.isEmpty()).collect(Collectors.toList());
-        //List<String> lines = bufReader.lines().collect(Collectors.toList());
+        List<File> files;
+        try {
+            files = Files.walk(Paths.get("../resources/episodes")).filter(Files::isRegularFile).map(Path::toFile).collect(Collectors.toList());
+        } catch (IOException e) {
+            out.println("O caminho para a pasta com os textos está errado.");
+            return;
+        }
 
         List<List<HasWord>> sentences = new ArrayList<>();
-        for(String line: lines){
-            List<List<HasWord>> tokenizedSentence = MaxentTagger.tokenizeText(new StringReader(line));
-            sentences.add(tokenizedSentence.get(0));
+        for(File file: files) {
+            out.println("Lendo arquivo " + file.getName());
+            FileReader reader = new FileReader(file);
+            BufferedReader bufReader = new BufferedReader(reader);
+            List<String> lines = bufReader
+                    .lines()
+                    .filter(line -> !line.trim().isEmpty())
+                    .collect(Collectors.toList());
+
+            for (String line : lines) {
+                List<List<HasWord>> tokenizedSentence = MaxentTagger.tokenizeText(new StringReader(line));
+                sentences.add(tokenizedSentence.get(0));
+            }
         }
+
         List<List<TaggedWord>> taggedSentences = tagger.process(sentences);
 
         ArrayList<String> foundNamedEntities = new ArrayList<>();
@@ -52,7 +62,6 @@ public class Main {
                     taggedWord.setWord(word);
                 }
 
-                //if(taggedWord.tag().equals("NNP") || taggedWord.tag().equals("NNPS")){
                 if (word.substring(0, 1).matches("^[A-Z]")) {
                     if (i == 0 && !(taggedWord.tag().equals("NNP") || taggedWord.tag().equals("NNPS"))) {
                         continue;
@@ -87,10 +96,18 @@ public class Main {
         sortedNamedEntities.addAll(foundNamedEntities);
         sortedNamedEntities.forEach(System.out::println);
         out.println(sortedNamedEntities.size());
+
+        Path outputCSVPath = Paths.get("../resources/named_entities.csv");
+        Files.deleteIfExists(outputCSVPath);
+        FileWriter f = new FileWriter(outputCSVPath.toString());
+        for(String namedEntity: sortedNamedEntities){
+            f.write(namedEntity);
+            f.write(System.lineSeparator());
+        }
     }
 
     private static boolean isComplement(TaggedWord taggedWord) {
-        List<String> allowed = Arrays.asList("of", "the", "'s", "with");
+        List<String> allowed = Arrays.asList("of", "the", "'s");
         return allowed.contains(taggedWord.word());
     }
 
@@ -117,26 +134,5 @@ public class Main {
 //        out.print(Arrays.toString(taggedSentence.stream().map(TaggedWord::toString).toArray()));
 //        out.print(") ");
 //        out.println();
-    }
-
-    // Fazia a comparação para ignorar a diferença entre, por exemplo, Starks e Stark. Mas isso não
-    // faz muito sentido se considerarmos Starks como sendo o nome próprio da família e Stark um sobrenome.
-    private static class PluralInsensitiveComparator implements Comparator<String> {
-
-        ASCIICaseInsensitiveComparator defaultComparator = new ASCIICaseInsensitiveComparator();
-
-        @Override
-        public int compare(String o1, String o2) {
-            if(o1.equals(o2.substring(0, o2.length()-1)) || o2.equals(o1.substring(0, o1.length()-1))){
-                if(o2.endsWith("s") && o2.length() > o1.length()){
-                    return 0;
-                }
-                if(o1.endsWith("s") && o1.length() > o2.length()){
-                    return 0;
-                }
-            }
-
-            return defaultComparator.compare(o1, o2);
-        }
     }
 }
