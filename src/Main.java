@@ -19,13 +19,13 @@ public class Main {
 
     public static void main(String[] args) throws IOException {
 
-        String modelFile = "../resources/models/english-left3words-distsim.tagger";
-        String fileToTag = "../resources/samples_for_tests/book_of_the_stranger_full.txt";
+        String modelFile = "resources/models/english-left3words-distsim.tagger";
+        String fileToTag = "resources/samples_for_tests/book_of_the_stranger_full.txt";
         MaxentTagger tagger = new MaxentTagger(modelFile);
 
         List<File> files;
         try {
-            files = Files.walk(Paths.get("../resources/episodes")).filter(Files::isRegularFile).map(Path::toFile).collect(Collectors.toList());
+            files = Files.walk(Paths.get("resources/episodes")).filter(Files::isRegularFile).map(Path::toFile).collect(Collectors.toList());
         } catch (IOException e) {
             out.println("O caminho para a pasta com os textos está errado.");
             return;
@@ -97,7 +97,7 @@ public class Main {
         sortedNamedEntities.forEach(System.out::println);
         out.println(sortedNamedEntities.size());
 
-        Path outputCSVPath = Paths.get("../resources/named_entities.csv");
+        Path outputCSVPath = Paths.get("resources/named_entities.csv");
         Files.deleteIfExists(outputCSVPath);
         FileWriter f = new FileWriter(outputCSVPath.toString());
         for(String namedEntity: sortedNamedEntities){
